@@ -1,0 +1,28 @@
+name: measure
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "measure/**" ]
+concurrency:
+  group: measure-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  bench:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup
+        run: ./setup.sh
+      - name: benchmark
+        env:
+          BLAKE3_LOG2: "16"
+          BLAKE3_WARMUP_RUNS: "5"
+          BLAKE3_RUNS: "25"
+        run: ./benchmark.sh
+      - name: score
+        run: cat score.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: score
+          path: score.json
